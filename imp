@@ -1180,6 +1180,7 @@ const audiencePollImplementationSound = new Audio("./sounds/audiencePoll_Impleme
 const doubleDipWrongAnswerSound = new Audio("./sounds/wrong_ans.mp3");
 const themeMusic = new Audio("./sounds/THEME_MUSIC2.mp3");
 
+let contestantIndex = 2;
 let currentQuestIndex = 0;
 let currentRandomQuestIndex;
 let currQuestObject;
@@ -1188,6 +1189,7 @@ let currSetTimeoutId ;
 
 let lifelineFlag = {
     fiftyFiftyFlag : 1,
+    expertAdviceFlag : 1,
     doubleDipFlag : 1,
     doubleDipMarker: 0,
 }
@@ -1348,7 +1350,7 @@ const resultAnalysis = (e)=>{
         enableNextButton();
         enableQuitButton();
         if(currentQuestIndex==9){
-            setTimeout(openQuitPage,2000);
+            setTimeout(openQuitPage,5000);
             quitFlag.oneCroreFlag = 1;
             disableQuitButton();
         }
@@ -1383,6 +1385,10 @@ const bulletTimeout = (flag,bullets,clearTimeoutId,e)=>{
             let lifelineBox = `
                 <div class="lifeline-box">
                     <div class="lifeline-item fifty-fifty">
+                        <div class="cross-mark cross-one "></div>
+                        <div class="cross-mark cross-two "></div>
+                    </div>
+                    <div class="lifeline-item expert-advice">
                         <div class="cross-mark cross-one "></div>
                         <div class="cross-mark cross-two "></div>
                     </div>
@@ -1499,6 +1505,53 @@ const doubleDip = ()=>{
         document.querySelector(".double-dip").classList.add("pointer-events-none"); 
     }
 }
+
+// Expert Advice lifeline --------------------
+
+const expertAdviceCrossMark = () => {
+    let t = document.querySelector(".expert-advice").children;
+    for(let i=0;i<t.length;i++)
+        t[i].classList.add("opacity-one");
+}
+
+const expertAdviceHandler = () => {
+    lifelineFlag["expertAdviceFlag"] = 0;
+    document.querySelector(".lifeline-box").classList.remove("show-lifeline");
+    document.getElementById("result").innerText = "Implementing expert advice ...";
+    LifelineImplementationSound();
+    document.querySelector(".expert-advice").classList.add("pointer-events-none");
+    expertAdviceCrossMark();
+    lifelineNum = document.querySelector(".lifeline-no").innerText ;
+    lifelineNum--;
+    document.querySelector(".lifeline-no").innerText = lifelineNum;
+
+    // Start a 45-second timer
+    let timer = 45;
+    const timerId = setInterval(() => {
+        if (timer > 0) {
+            timer--;
+            document.querySelector(".timer").innerText = timer;
+        } else {
+            clearInterval(timerId);
+            document.querySelector(".timer").innerText = "Time's up!";
+        }
+    }, 1000);
+    optButtonEnabled();
+    enableQuitButton();
+}
+
+const expertAdvice = () => {
+    if(lifelineFlag["expertAdviceFlag"])
+    {
+        document.querySelector(".expert-advice").addEventListener("click",expertAdviceHandler);
+    }
+    else
+    {
+        expertAdviceCrossMark();
+        document.querySelector(".expert-advice").classList.add("pointer-events-none"); 
+    }
+}
+
 // 50-50 lifeline-----------
 
 const fiftyFiftyCrossMark = ()=>{
@@ -1609,7 +1662,6 @@ function shuffleOptions(currQuestObject){
 
     return currQuestObject;
 }
-let contestantIndex = 0;
 const buildKBCquestions = ()=>{
     questSetLength = kbcQuestions[contestantIndex].length;
     if (currentQuestIndex >= questSetLength) {
@@ -1639,6 +1691,7 @@ const buildKBCquestions = ()=>{
     lifelineApplied();
     fiftyFifty();
     doubleDip();
+    expertAdvice();
 }
 
 
@@ -1815,6 +1868,9 @@ function openQuitPage(){
             <div class="prize-money-earned">Prize Money Earned :</div>
             <div class="money">${money}</div>
             <div class="last-comment">${lastComment}</div>
+            <div id="NextContestant" class="btn page2btn" >
+                <button onclick="startGameForNextContestant()">Next Contestant</button>
+            </div>
         </div>
     </div>
 
